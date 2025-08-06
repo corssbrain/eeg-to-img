@@ -1,0 +1,11 @@
+{
+    "data_path": "/gpfs/radev/home/aa2793/project/aria/sota/dataset/EEG_Image_decode_local/Preprocessed_data_250Hz",
+    "img_directory_training": "/gpfs/radev/home/aa2793/project/aria/sota/dataset/EEG_Image_decode_local/images_set/training_images",
+    "img_directory_test": "/gpfs/radev/home/aa2793/project/aria/sota/dataset/EEG_Image_decode_local/images_set/test_images",
+    "features_path":"/gpfs/radev/home/aa2793/project/aria/sota/dataset/EEG_Image_decode_local/CLIP",
+    "clip_image_text_embedding": "/gpfs/radev/home/aa2793/project/aria/sota/dataset/EEG_Image_decode_local/clip_image_text_embedding/"
+}
+
+
+
+ 
