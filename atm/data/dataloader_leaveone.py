@@ -11,8 +11,9 @@ from typing import List, Optional, Sequence, Tuple
 import torch
 from torch.utils.data import DataLoader, Dataset
 
-from clip_embedding import clip_text_image_encoder
-
+import sys
+from pathlib import Path
+ 
 
 class EEGDataset(Dataset):
     """
@@ -49,7 +50,8 @@ class EEGDataset(Dataset):
     ) -> None:
         device = 'cuda'
         # loading the raw data: eeg, image, and text
-        from things_eeg_loading import load_image_text_eeg 
+        from data.things_eeg_loading import load_image_text_eeg 
+        # from things_eeg_loading import load_image_text_eeg  
         (
             raw_data,
             self.labels,
@@ -66,7 +68,7 @@ class EEGDataset(Dataset):
         self.subjects = subjects if subjects is not None else self.subject_list
         self.n_subjects = len(self.subjects)
         self.time_window = tuple(time_window)
-        self.n_classes = 1654 if train else 200
+        self.n_cls = 1654 if train else 200
         self.classes = classes
         self.pictures = pictures
         self.exclude_subject = exclude_subject
@@ -77,14 +79,14 @@ class EEGDataset(Dataset):
  
         # Pre-compute EEG clips and CLIP features   
         self.data = self._extract_eeg(raw_data, self.time_window)
- 
-        from clip_embedding import clip_text_image_encoder
+
+        from data.clip_embedding import clip_text_image_encoder 
+        # from clip_embedding import clip_text_image_encoder 
         (
             self.text_features,
             self.img_features,
         ) = clip_text_image_encoder(self.text, self.img, pictures, classes, train, device, clip_image_text_embedding)
-
-        
+   
     # Private helpers     
     def _extract_eeg(self, eeg_data: torch.Tensor, window: Tuple[float, float]) -> torch.Tensor:
         """Crop raw EEG to `window` (start, end) in seconds."""
@@ -96,45 +98,55 @@ class EEGDataset(Dataset):
     def __len__(self) -> int:  # noqa: D401  (one-liner is fine here)
         """Return total number of EEG epochs."""
         return self.data.shape[0]
-
-    def __getitem__(
-        self, index: int
-    ) -> Tuple[torch.Tensor, int, str, torch.Tensor, str, torch.Tensor]:
-        """Return one sample: EEG, label, text, text_feat, img_path, img_feat."""
-        x_eeg = self.data[index]
-        y_label = self.labels[index]
  
-        # Map dataset index → text/img indices (logic unchanged, reformatted) 
+    def __getitem__(self, index):
+        # Get the data and label corresponding to "index"
+        # index: (subjects * classes * 10 * 4)
+        x = self.data[index]
+        label = self.labels[index]
+        
         if self.pictures is None:
             if self.classes is None:
-                n_train = self.n_classes * 10 * 4
-                n_test = self.n_classes * 1 * 80
+                index_n_sub_train = self.n_cls * 10 * 4
+                index_n_sub_test = self.n_cls * 1 * 80
             else:
-                n_train = len(self.classes) * 10 * 4
-                n_test = len(self.classes) * 1 * 80
+                index_n_sub_test = len(self.classes)* 1 * 80
+                index_n_sub_train = len(self.classes)* 10 * 4
+            # text_index: classes
+            if self.train:
+                text_index = (index % index_n_sub_train) // (10 * 4)
+            else:
+                text_index = (index % index_n_sub_test)
+            # img_index: classes * 10
+            if self.train:
+                img_index = (index % index_n_sub_train) // (4)
+            else:
+                img_index = (index % index_n_sub_test)
         else:
             if self.classes is None:
-                n_train = self.n_classes * 1 * 4
-                n_test = self.n_classes * 1 * 80
+                index_n_sub_train = self.n_cls * 1 * 4
+                index_n_sub_test = self.n_cls * 1 * 80
             else:
-                n_train = len(self.classes) * 1 * 4
-                n_test = len(self.classes) * 1 * 80
-
-        if self.train:
-            text_idx = (index % n_train) // (1 if self.pictures else 10) // 4
-            img_idx = (index % n_train) // 4
-        else:
-            text_idx = index % n_test
-            img_idx = index % n_test
-
-        return (
-            x_eeg,
-            y_label,
-            self.text[text_idx],
-            self.text_features[text_idx], 
-            self.img_features[img_idx],
-            self.img[img_idx],
-        )
+                index_n_sub_test = len(self.classes)* 1 * 80
+                index_n_sub_train = len(self.classes)* 1 * 4
+            # text_index: classes
+            if self.train:
+                text_index = (index % index_n_sub_train) // (1 * 4)
+            else:
+                text_index = (index % index_n_sub_test)
+            # img_index: classes * 10
+            if self.train:
+                img_index = (index % index_n_sub_train) // (4)
+            else:
+                img_index = (index % index_n_sub_test)
+   
+        text = self.text[text_index]
+        img = self.img[img_index]
+        
+        text_features = self.text_features[text_index]
+        img_features = self.img_features[img_index]
+        
+        return x, label, text, text_features, img, img_features
 
 if __name__ == "__main__": 
 
@@ -154,9 +166,8 @@ if __name__ == "__main__":
         y_label_int,
         y_description,
         x_text_feat,
-        x_img_feat,
         img_path,
-
+        x_img_feat,
     ) = sample
 
     import pdb;pdb.set_trace()
