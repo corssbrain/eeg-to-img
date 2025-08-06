@@ -3,7 +3,7 @@ import os
 from torch.utils.data import Dataset, DataLoader
 from typing import List, Optional, Sequence, Tuple 
 
-
+# eegdataset class
 class EEGDataset(Dataset):
     """
     EEGDataset wraps multi-modal EEG experiments
