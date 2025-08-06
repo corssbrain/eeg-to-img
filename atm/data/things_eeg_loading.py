@@ -1,11 +1,14 @@
+"""
+The aim of this code is to load raw EEG dataset of Things dataset.
+"""
+
 import json
 import os
-import numpy as np
 from pathlib import Path
 
-import torch
+import numpy as np
 import open_clip
-
+import torch
  
 def load_image_text_eeg(
     subjects,

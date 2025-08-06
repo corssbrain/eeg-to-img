@@ -1,9 +1,19 @@
-import torch 
-import os 
-from torch.utils.data import Dataset, DataLoader
-from typing import List, Optional, Sequence, Tuple 
+"""
+This code creates an EEGDataset which creates a PyTorch DataLoader.
+It contains EEGDataset which first loads raw EEG of the Things dataset
+from things_eeg_loading. It then embeds the text and image of the dataset
+using clip_text_image_encoder from clip_embedding.
+"""
 
-# eegdataset class
+import os
+from typing import List, Optional, Sequence, Tuple
+
+import torch
+from torch.utils.data import DataLoader, Dataset
+
+from clip_embedding import clip_text_image_encoder
+
+
 class EEGDataset(Dataset):
     """
     EEGDataset wraps multi-modal EEG experiments
@@ -39,7 +49,7 @@ class EEGDataset(Dataset):
     ) -> None:
         device = 'cuda'
         # loading the raw data: eeg, image, and text
-        from data_01_loading import load_image_text_eeg 
+        from things_eeg_loading import load_image_text_eeg 
         (
             raw_data,
             self.labels,
@@ -68,7 +78,7 @@ class EEGDataset(Dataset):
         # Pre-compute EEG clips and CLIP features   
         self.data = self._extract_eeg(raw_data, self.time_window)
  
-        from data_02_clip import clip_text_image_encoder
+        from clip_embedding import clip_text_image_encoder
         (
             self.text_features,
             self.img_features,
@@ -150,5 +160,3 @@ if __name__ == "__main__":
     ) = sample
 
     import pdb;pdb.set_trace()
-
- 

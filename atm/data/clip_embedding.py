@@ -1,38 +1,31 @@
-import torch
-from torch.utils.data import Dataset, DataLoader
-import numpy as np
+"""
+This code embeds the Things dataset’s images and captions of the EEG recording
+stimulations using the CLIP model.
+"""
+
 import os
+from typing import List, Sequence, Tuple
+
 import clip
-from torch.nn import functional as F
-import torch.nn as nn
-from torchvision import transforms
+import open_clip
+import torch
 from PIL import Image
-import requests 
-import open_clip  
-import json  
-from huggingface_hub import snapshot_download 
-from typing import List, Optional, Sequence, Tuple 
+from torch.nn import functional as F
 
 
-def setup() -> None:  
-    # Configuration        
-    PROXY_URL = "http://127.0.0.1:7890"
-    clip_model_type = "ViT-H-14"
-    PRETRAINED_WEIGHTS = "laion2b_s32b_b79k"
-    PRECISION = "fp32"
-     
-    os.environ["http_proxy"] = PROXY_URL
-    os.environ["https_proxy"] = PROXY_URL
+def setup(clip_model_type="ViT-H-14", proxy_url = "http://127.0.0.1:7890", pretrained_weights = "laion2b_s32b_b79k", precision = "fp32") -> None:  
+    
+    # Configuration         
+    os.environ["http_proxy"] = proxy_url
+    os.environ["https_proxy"] = proxy_url
 
-    """Load model and paths specified in *data_config.json*.""" 
-    device = "cuda:0" if torch.cuda.is_available() else "cpu"
-
+    """Load model and paths specified in *data_config.json*."""  
     model_clip, preprocess_train, feature_extractor = (
         open_clip.create_model_and_transforms(
             clip_model_type,
-            pretrained=PRETRAINED_WEIGHTS,  # pulled from local HF cache
-            precision=PRECISION,
-            device=device,
+            pretrained=pretrained_weights,  # pulled from local HF cache
+            precision=precision,
+            device="cuda:0" if torch.cuda.is_available() else "cpu",
         )
     )
 
@@ -99,6 +92,10 @@ def clip_text_image_encoder(
     train: bool = True,
     device = 'cuda', 
     clip_image_text_embedding='',
+    clip_model_type="ViT-H-14", 
+    proxy_url = "http://127.0.0.1:7890", 
+    pretrained_weights = "laion2b_s32b_b79k", 
+    precision = "fp32"
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """
     Compute (or load) CLIP features for `text` and `img`.
@@ -106,7 +103,12 @@ def clip_text_image_encoder(
     A cache file is used only when **both** `classes` and `pictures` are *None*.
     """
     
-    model_clip, preprocess_train, feature_extractor, clip_model_type = setup()
+    model_clip, preprocess_train, feature_extractor, clip_model_type = setup(
+        clip_model_type=clip_model_type, 
+        proxy_url = proxy_url, 
+        pretrained_weights=pretrained_weights, 
+        precision = precision
+    )
 
     cache_file = (
         f"{clip_model_type}_features_train.pt"
@@ -131,29 +133,3 @@ def clip_text_image_encoder(
             )
 
     return text_feats, img_feats
- 
-
-# if __name__ == "__main__": 
-     
-    # test_dataset = EEGDataset(subjects=["sub-01"], train=False)
-    # test_loader = DataLoader(test_dataset, batch_size=1, shuffle=True)
- 
-    # # ... or iterate through the DataLoader:
-    # for batch_idx, batch in enumerate(test_loader):
-    #     if batch_idx == 110:
-    #         sample = batch
-    #         break
-
-    # (
-    #     x_eeg,
-    #     y_label,
-    #     x_text,
-    #     x_text_feat,
-    #     x_img_feat,
-    #     img_path,
-
-    # ) = sample
-
-    # import pdb;pdb.set_trace()
-
- 
