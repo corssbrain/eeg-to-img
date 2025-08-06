@@ -197,7 +197,7 @@ def load_image_text_eeg(
                     continue
                 start = c * samples_per_class
                 seg = eeg[start : start + samples_per_class]
-                seg = torch.mean(seg.squeeze(0), 0)          # <- mean collapse
+                seg = torch.mean(seg.squeeze(0), 0)          # <- mean collapse ####################### <------ MEAN COLLAPSE
                 lab = torch.full((samples_per_class,), c, dtype=torch.long)
                 data_list.append(seg)
                 label_list.append(lab)
