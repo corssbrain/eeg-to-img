@@ -63,9 +63,9 @@ def plot_metrics(
     info_text = (
         f"Best Model Info (from Epoch {best_epoch_info['epoch']}):\n"
         f"Train Loss: {best_epoch_info['train_loss']:.4f}\n"
-        f"Train Accuracy: {best_epoch_info['train_accuracy']:.4f}\n"
+        f"Train Accuracy: {best_epoch_info['train_acc']:.4f}\n"
         f"Test Loss: {best_epoch_info['test_loss']:.4f}\n"
-        f"Test Accuracy: {best_epoch_info['test_accuracy']:.4f}\n"
+        f"Test Accuracy: {best_epoch_info['test_acc']:.4f}\n"
         f"2-Class Acc: {best_epoch_info['v2_acc']:.4f}\n"
         f"4-Class Acc: {best_epoch_info['v4_acc']:.4f}\n"
         f"10-Class Acc: {best_epoch_info['v10_acc']:.4f}"
@@ -85,3 +85,4 @@ def plot_metrics(
     plt.suptitle(title, fontsize=16, y=1.05)
     plt.savefig(save_path)
     plt.close(fig)
+ 

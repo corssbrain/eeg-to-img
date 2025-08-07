@@ -39,7 +39,7 @@ from braindecode.models import (
     EEGITNet,
     ShallowFBCSPNet,
 )
- 
+
 # ────────────────────────────────── helpers ──────────────────────────────────
 def train_model(
     subject: str,
@@ -234,7 +234,6 @@ def main_train_loop(
         save_path="pos_img_text.png",
     )
 
-
 # ──────────────────────────────────── main ───────────────────────────────────
 def main() -> None:
     """Parse arguments and launch subject-wise training."""
@@ -285,7 +284,6 @@ def main() -> None:
             test_ds.img_features,
             cfg=args,
         )
-
 
 if __name__ == "__main__":
     main()
