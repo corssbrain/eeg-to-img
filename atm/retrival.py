@@ -133,7 +133,7 @@ def evaluate_model(
 
                 logits = logit_scale * eeg_feats[idx] @ sel_img_feats.T
                 pred_lbl = sel_classes[logits.argmax().item()]
-
+                import pdb;pdb.set_trace()
                 correct += pred_lbl == lbl.item()
                 total += 1
 
@@ -183,9 +183,9 @@ def main_train_loop(
         train_losses.append(tr_loss)
         train_accs.append(tr_acc)
 
-        te_loss, te_acc, top5_acc = evaluate_model(
-            subject, model, test_loader, device, txt_test, img_test, k=200
-        )
+        # te_loss, te_acc, top5_acc = evaluate_model(
+        #     subject, model, test_loader, device, txt_test, img_test, k=200
+        # )
         _, v2_acc, _ = evaluate_model(subject, model, test_loader, device, txt_test, img_test, k=2)
         _, v4_acc, _ = evaluate_model(subject, model, test_loader, device, txt_test, img_test, k=4)
         _, v10_acc, _ = evaluate_model(subject, model, test_loader, device, txt_test, img_test, k=10)
