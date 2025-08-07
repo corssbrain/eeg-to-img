@@ -269,14 +269,14 @@ def main_train_loop(sub, current_time, eeg_model, train_dataloader, test_dataloa
         train_loss, train_accuracy, features_tensor = train_model(sub, eeg_model, train_dataloader, optimizer, device, text_features_train_all, img_features_train_all, config=config)
         if (epoch +1) % 5 == 0:                    
             # Get the current time and format it as a string (e.g., '2024-01-17_15-30-00')                  
-            if config.insubject==True:       
-                os.makedirs(f"./models/contrast/{config.encoder_type}/{sub}/{current_time}", exist_ok=True)             
-                file_path = f"./models/contrast/{config.encoder_type}/{sub}/{current_time}/{epoch+1}.pth"
-                torch.save(eeg_model.state_dict(), file_path)            
-            else:                
-                os.makedirs(f"./models/contrast/across/{config.encoder_type}/{current_time}", exist_ok=True)             
-                file_path = f"./models/contrast/across/{config.encoder_type}/{current_time}/{epoch+1}.pth"
-                torch.save(eeg_model.state_dict(), file_path)
+            # if config.insubject==True:       
+            #     os.makedirs(f"./models/contrast/{config.encoder_type}/{sub}/{current_time}", exist_ok=True)             
+            #     file_path = f"./models/contrast/{config.encoder_type}/{sub}/{current_time}/{epoch+1}.pth"
+            #     torch.save(eeg_model.state_dict(), file_path)            
+            # else:                
+            #     os.makedirs(f"./models/contrast/across/{config.encoder_type}/{current_time}", exist_ok=True)             
+            #     file_path = f"./models/contrast/across/{config.encoder_type}/{current_time}/{epoch+1}.pth"
+            #     torch.save(eeg_model.state_dict(), file_path)
             print(f"model saved in {file_path}!")
         train_losses.append(train_loss)
         train_accuracies.append(train_accuracy)
