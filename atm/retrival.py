@@ -9,8 +9,6 @@ Requires:
     * data.dataloader_leaveone.EEGDataset
     * utils.{args,plots,utils}
 
-Environment variables:
-    WANDB_API_KEY – optional; here set to a dummy value and WANDB disabled.
 """
 
 from __future__ import annotations
@@ -31,10 +29,6 @@ from data.dataloader_leaveone import EEGDataset
 from utils.args import args_function
 from utils.plots import plot_metrics
 from utils.utils import clear_screen, extract_id_from_string
-
-# Disable Weights & Biases logging (offline stub)
-os.environ["WANDB_API_KEY"] = "KEY"
-os.environ["WANDB_MODE"] = "offline"
 
 # ──────────────────────────── model imports ────────────────────────────
 from model.retrival_atms import ATMS
