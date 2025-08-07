@@ -13,24 +13,24 @@ Requires:
 
 from __future__ import annotations
 
-# ────────────────────────────── std-lib imports ──────────────────────────────
+# std-lib imports 
 import itertools
 import os
 import random
 from typing import List, Tuple
 
-# ──────────────────────────── third-party imports ────────────────────────────
+# third-party imports 
 import torch
 from torch.optim import AdamW
 from torch.utils.data import DataLoader
 
-# ───────────────────────────── local-app imports ─────────────────────────────
+# local-app imports
 from data.dataloader_leaveone import EEGDataset
 from utils.args import args_function
 from utils.plots import plot_metrics
 from utils.utils import clear_screen, extract_id_from_string
 
-# ──────────────────────────── model imports ────────────────────────────
+# model imports 
 from model.retrival_atms import ATMS
 from braindecode.models import (
     EEGNetv4,
@@ -40,7 +40,7 @@ from braindecode.models import (
     ShallowFBCSPNet,
 )
 
-# ────────────────────────────────── helpers ──────────────────────────────────
+# helpers 
 def train_model(
     subject: str,
     model: torch.nn.Module,
@@ -101,7 +101,9 @@ def evaluate_model(
     k: int = 200,
     alpha: float = 0.99,
 ) -> Tuple[float, float, float]:
-    """Evaluate top-1 and top-5 accuracy on *k*-way retrieval."""
+    """
+        Evaluate top-1 and top-5 accuracy on *k*-way retrieval.
+    """
     model.eval()
 
     text_feats_all = text_feats_all.to(device).float()
@@ -229,17 +231,16 @@ def main_train_loop(
         v2_accs,
         v4_accs,
         v10_accs,
-        best_epoch_info,
-        title="pos_img_text",
-        save_path="pos_img_text.png",
+        best_epoch_info, 
+        save_path="retrival_results.png",
     )
 
-# ──────────────────────────────────── main ───────────────────────────────────
+# main
 def main() -> None:
     """Parse arguments and launch subject-wise training."""
     args, device = args_function()
 
-    # Optional: central registry of encoders
+    # central registry of encoders
     ENCODER_REGISTRY = {
         "ATMS": ATMS,
         "EEGNetv4": EEGNetv4,
@@ -287,4 +288,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
- 
