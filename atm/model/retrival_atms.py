@@ -18,11 +18,11 @@ from einops.layers.torch import Rearrange
 
 # Local application/library-specific imports
 from data.dataloader_leaveone import EEGDataset
-from loss import ClipLoss
+from nn.loss import ClipLoss
 from nn.subject_layers.Embed import DataEmbedding
 from nn.subject_layers.SelfAttention_Family import AttentionLayer, FullAttention
 from nn.subject_layers.Transformer_EncDec import Encoder, EncoderLayer
-from args import Config
+from utils.args import Config
         
 class iTransformer(nn.Module):
     def __init__(self, configs, joint_train=False,  num_subjects=10):
