@@ -25,8 +25,8 @@ from torch.optim import AdamW
 from torch.utils.data import DataLoader
 
 # local-app imports
+from args import args_function
 from data.dataloader_leaveone import EEGDataset
-from utils.args import args_function
 from utils.plots import plot_metrics
 from utils.utils import clear_screen, extract_id_from_string
 
@@ -40,6 +40,7 @@ from braindecode.models import (
     ShallowFBCSPNet,
 )
 
+ 
 # helpers 
 def train_model(
     subject: str,
@@ -69,19 +70,19 @@ def train_model(
         subj_id = extract_id_from_string(subject)
         subj_ids = torch.full((eeg.size(0),), subj_id, dtype=torch.long, device=device)
 
-        eeg_feats = model(eeg, subj_ids).float()
+        eeg_feats = model(eeg, subj_ids).float()                               # model([64, 63, 250], [64]) --> [64, 1024]
         feats_epoch.append(eeg_feats)
-
         logit_scale = model.logit_scale
-        loss_img = model.loss_func(eeg_feats, img_feats, logit_scale)
-        loss_txt = model.loss_func(eeg_feats, text_feats, logit_scale)
-        loss = alpha * loss_img + (1 - alpha) * loss_txt
+    
+        loss_img = model.loss_func(eeg_feats, img_feats, logit_scale)          # 6.8374 = ([64, 1024], [64, 1024], 2.6593)
+        loss_txt = model.loss_func(eeg_feats, text_feats, logit_scale)         # 6.6043 = ([64, 1024], [64, 1024], 2.6593)
+        loss = alpha * loss_img + (1 - alpha) * loss_txt                       # 6.8350 
         loss.backward()
         optimizer.step()
 
         total_loss += loss.item()
-        logits = logit_scale * eeg_feats @ img_feats_all.T
-        preds = logits.argmax(dim=1)
+        logits = logit_scale * eeg_feats @ img_feats_all.T                     # [64, 1654] = 2.6593 * [64, 1024]  @ [1024, 1654]
+        preds = logits.argmax(dim=1)                                           # [64]
 
         total += preds.size(0)
         correct += (preds == labels).sum().item()
@@ -126,6 +127,7 @@ def evaluate_model(
             loss_txt = model.loss_func(eeg_feats, text_feats, logit_scale)
             total_loss += (alpha * loss_img + (1 - alpha) * loss_txt).item()
 
+            # “Here’s your brain signal (EEG). Now I’m going to give you a pile of k pictures — one is the correct match, the others are distractors. Can you find the right one?”
             for idx, lbl in enumerate(labels):
                 neg_classes = list(all_labels - {lbl.item()})
                 sel_classes = random.sample(neg_classes, k - 1) + [lbl.item()]
@@ -133,7 +135,7 @@ def evaluate_model(
 
                 logits = logit_scale * eeg_feats[idx] @ sel_img_feats.T
                 pred_lbl = sel_classes[logits.argmax().item()]
-                import pdb;pdb.set_trace()
+                 
                 correct += pred_lbl == lbl.item()
                 total += 1
 
@@ -143,9 +145,9 @@ def evaluate_model(
                         top5_correct += 1
 
     avg_loss = total_loss / len(dataloader)
-    top1_acc = correct / total
+    topk_acc = correct / total
     top5_acc = top5_correct / total if k >= 50 else 0.0
-    return avg_loss, top1_acc, top5_acc
+    return avg_loss, topk_acc, top5_acc
 
 
 def main_train_loop(
@@ -183,9 +185,9 @@ def main_train_loop(
         train_losses.append(tr_loss)
         train_accs.append(tr_acc)
 
-        # te_loss, te_acc, top5_acc = evaluate_model(
-        #     subject, model, test_loader, device, txt_test, img_test, k=200
-        # )
+        te_loss, te_acc, top5_acc = evaluate_model(
+            subject, model, test_loader, device, txt_test, img_test, k=200
+        )
         _, v2_acc, _ = evaluate_model(subject, model, test_loader, device, txt_test, img_test, k=2)
         _, v4_acc, _ = evaluate_model(subject, model, test_loader, device, txt_test, img_test, k=4)
         _, v10_acc, _ = evaluate_model(subject, model, test_loader, device, txt_test, img_test, k=10)

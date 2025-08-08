@@ -5,9 +5,9 @@ from dataclasses import dataclass
 import argparse
 import torch 
 
-# Configure Weights & Biases in offline mode
-os.environ["WANDB_API_KEY"] = "KEY"
-os.environ["WANDB_MODE"] = "offline"
+# # Configure Weights & Biases in offline mode
+# os.environ["WANDB_API_KEY"] = "KEY"
+# os.environ["WANDB_MODE"] = "offline"
 
 
 class Config:
@@ -33,7 +33,7 @@ def args_function():
     parser = argparse.ArgumentParser(description='EEG Transformer Training Script')
     parser.add_argument('--data_path', type=str, default="/gpfs/radev/home/aa2793/project/aria/sota/dataset/EEG_Image_decode_local/Preprocessed_data_250Hz", help='Path to the preprocessed data')
     parser.add_argument('--lr', type=float, default=3e-4, help='Learning rate')
-    parser.add_argument('--epochs', type=int, default=5, help='Number of epochs')
+    parser.add_argument('--epochs', type=int, default=40, help='Number of epochs')
     parser.add_argument('--batch_size', type=int, default=64, help='Batch size') 
     parser.add_argument('--gpu', type=str, default='cuda:0', help='GPU device to use')
     parser.add_argument('--device', type=str, choices=['cpu', 'gpu'], default='gpu', help='Device to run on (cpu or gpu)')    

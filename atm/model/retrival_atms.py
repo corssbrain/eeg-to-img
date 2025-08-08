@@ -19,10 +19,11 @@ from einops.layers.torch import Rearrange
 # Local application/library-specific imports
 from data.dataloader_leaveone import EEGDataset
 from nn.loss import ClipLoss
-from nn.subject_layers.Embed import DataEmbedding
-from nn.subject_layers.SelfAttention_Family import AttentionLayer, FullAttention
-from nn.subject_layers.Transformer_EncDec import Encoder, EncoderLayer
-from utils.args import Config
+from nn.embedding import DataEmbedding
+from nn.selfattention import AttentionLayer, FullAttention
+from nn.transformer import Encoder, EncoderLayer
+from model.config import ATMSConfig
+
         
 class iTransformer(nn.Module):
     def __init__(self, configs, joint_train=False,  num_subjects=10):
@@ -133,11 +134,10 @@ class Proj_eeg(nn.Sequential):
         )
 
 
-
 class ATMS(nn.Module):    
     def __init__(self, num_channels=63, sequence_length=250, num_subjects=2, num_features=64, num_latents=1024, num_blocks=1):
-        super(ATMS, self).__init__()
-        default_config = Config()
+        super(ATMS, self).__init__() 
+        default_config = ATMSConfig()
         self.encoder = iTransformer(default_config)   
         self.subject_wise_linear = nn.ModuleList([nn.Linear(default_config.d_model, sequence_length) for _ in range(num_subjects)])
         self.enc_eeg = Enc_eeg()
@@ -145,14 +145,9 @@ class ATMS(nn.Module):
         self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
         self.loss_func = ClipLoss()       
          
-    def forward(self, x, subject_ids):
-        x = self.encoder(x, None, subject_ids)
-        # print(f'After attention shape: {x.shape}')
-        # print("x", x.shape)
-        # x = self.subject_wise_linear[0](x)
-        # print(f'After subject-specific linear transformation shape: {x.shape}')
-        eeg_embedding = self.enc_eeg(x)
-        
-        out = self.proj_eeg(eeg_embedding)
+    def forward(self, x, subject_ids): 
+        x = self.encoder(x, None, subject_ids)       # [64, 63, 250] --> [64, 63, 250] 
+        eeg_embedding = self.enc_eeg(x)              # [64, 63, 250] --> [64, 1440] 
+        out = self.proj_eeg(eeg_embedding)           # [64, 1440] --> [64, 1024]
         return out  
  
